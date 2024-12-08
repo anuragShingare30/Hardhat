@@ -64,7 +64,7 @@ describe("Token contract", function () {
 
     // start the deployment of our token contract 
     // return a Promise that resolves to a Contract
-    // This is the contract intance that has a method for each of your smart contract functions.
+    // This is the contract instance that has a method for each of your smart contract functions.
       const token = await ethers.deployContract("Web3");
 
     // Once contract is deployed, we can call contract methods using contract instance(token).
