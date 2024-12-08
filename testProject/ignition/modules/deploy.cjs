@@ -6,4 +6,4 @@ const TokenModule = buildModule("TokenModule", (m) => {
   return { token };
 });
 
-module.exports = TokenModule;
+module.exports = TokenModule; 

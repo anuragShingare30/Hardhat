@@ -23,4 +23,4 @@ describe("Token contract", function () {
       assert.equal(await token.totalSupply(), ownerBalance);
       assert.equal(await token.name(), "Web3");
     });
-  });
+  }); 

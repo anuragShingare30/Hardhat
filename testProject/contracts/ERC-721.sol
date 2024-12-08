@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol"; 
 import "hardhat/console.sol";
 
-contract Web3 is ERC721, ERC721Enumerable, ERC721Pausable, Ownable {
+contract Web3 is ERC721, ERC721Enumerable, ERC721Pausable, Ownable { 
     uint256 private _nextTokenId;
     uint256 constant maxSupply = 3;
     uint allowListFund = 0.001 ether;
