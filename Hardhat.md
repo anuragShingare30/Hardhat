@@ -194,13 +194,14 @@ module.exports = TokenModule;
 - Now to deploy our smart contract we will initialize an RPC server locally in our terminal(port:8545)
 - We need to modify our **hardhat.config.js** file.
 
+
 ```js
 // hardhat.config.js
 
 require("@nomicfoundation/hardhat-toolbox");
 const { vars } = require("hardhat/config");
 
-// SET YOUR API KEY IN VARS AND NOT IN .ENV
+// // SET YOUR API KEY IN VARS AND NOT IN .ENV
 // npx hardhat vars set API_KEY_NAME
 
 
@@ -208,7 +209,7 @@ const INFURA_API_KEY = vars.get("INFURA_API_KEY");
 const PRIVATE_KEY = vars.get("PRIVATE_KEY");
 
 module.exports = {
-  solidity: "0.8.27",
+  solidity: "0.8.28",
   networks: {
     sepolia: {
       url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
@@ -255,3 +256,103 @@ npx hardhat ignition verify sepolia-deployment
 ```
 
 
+#### INSTALL .env DIRECTORY
+
+```js
+npm install dotenv --save
+
+const infuraAPIKey = import.meta.env.INFURA_API_KEY;
+```
+
+
+
+
+
+
+```js
+'use client';
+import React from 'react'
+import { ConnectWalletBtn } from '../components/ConnectWalletBtn';
+import ToDoList from '../components/ToDoList';
+import { Web3 } from 'web3';
+import address from "../config";
+import abi from "../abi";
+
+
+const Home = () => {
+  const [correctNet, setCorrectNet] = React.useState(false);
+  const [loggedIn, setLoggedIn] = React.useState(false);
+  const [currentAcc, setCurrentAcc] = React.useState('');
+  const [input, setInput] = React.useState('');
+  const [task,setTasks] = React.useState([]);
+  const web3 = new Web3('https://sepolia.infura.io/v3/6e2aaaa2ff0c4e00995a96624cca8e7a');
+
+  // INITIALIZE THE SMART CONTRACT  
+
+  const token = new web3.eth.Contract(abi.abi, address.contractAddress);
+
+  const ConnectWallet = async ()=>{
+    try {
+      const {ethereum} = window;
+
+      if(!ethereum){
+        console.log("MetaMask not detected!!!");
+        return;
+      }
+      
+      const chainId = await ethereum.request({method:"eth_chainId"});
+      console.log("connected to chain id : ", chainId);
+      
+      const sepoliaChainId = "0xaa36a7";
+      if(chainId != sepoliaChainId){
+          alert("You are not connected to sepolia test network!!!") 
+          setCorrectNet(false);
+          return;
+      }
+      setCorrectNet(true);
+
+      const accounts = await ethereum.request({method:"eth_requestAccounts"});
+      console.log("account address detected : ", accounts[0]);
+      setLoggedIn(true);
+      setCurrentAcc(accounts[0]);
+
+    } catch (error) {
+      console.log(error);
+    }
+  } 
+
+  const AddTask = async ()=>{
+    try {
+      const {ethereum} = window;
+      if(ethereum){
+          await token.methods.addTask(input).send({from:currentAcc})
+          .then(res=>{
+            setTasks(...task,task);
+            console.log("Task added");
+          })
+          .catch(error =>{
+            console.log(error);
+          })
+      } else{
+        console.log("Eth does not exist");
+        
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  return (
+    <div>
+      <div>
+        <h1 className='btn btn-primary m-4'>{currentAcc}</h1>
+        {
+          loggedIn ? <ToDoList setInput={setInput} AddTask={AddTask}></ToDoList> : <ConnectWalletBtn ConnectWallet={ConnectWallet} />
+        }
+      </div>
+    </div>
+  )
+}
+
+export default Home; 
+```
