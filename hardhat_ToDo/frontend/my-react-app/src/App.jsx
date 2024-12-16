@@ -2,7 +2,7 @@ import contract from "../../../artifacts/contracts/ToDo.sol/ToDo.json";
 import { contractAddress } from "./config";
 // import { useSDK } from "@metamask/sdk-react";
 import { useEffect, useState } from "react";
-import AddTask from "../component/AddTask";
+import AddTask from "./component/AddTask";
 import { Web3 } from "web3";
 
 function App() {
@@ -12,12 +12,13 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [tasks, getTasks] = useState([]);
 
+
   // // CREATING A CONTRACT INSTANCE
   // const rpc_url = import.meta.env.INFURA_URL;
   const { ethereum } = window;
-  // const web3 = new Web3(ethereum);
-  // const abi = contract.abi;
-  // const token = new web3.eth.Contract(abi, contractAddress);
+  const web3 = new Web3(ethereum);
+  const abi = contract.abi;
+  const token = new web3.eth.Contract(abi, contractAddress);
 
   // // used metamask sdk for wallet connect
   // const connectWallet = async () => {
@@ -38,13 +39,9 @@ function App() {
   //   }
   // };
 
-  // connect wallet using ethereum
+  // // connect wallet using ethereum
   const connectWalletBtn = async () => {
     try {
-      if (!account) {
-        console.warn("Account is not connected.");
-        return;
-      }
       if (!ethereum) {
         console.log("metamask not found!!!");
         return;
@@ -77,23 +74,22 @@ function App() {
 
   useEffect(() => {
     connectWalletBtn();
-    // getAllTask();
+    getAllTask();
   }, []);
+
+
 
   // ADD TASK
   const addTasks = async (task) => {
     try {
-      if (!account) {
-        console.warn("Account is not connected.");
-        return;
-      }
       if (!ethereum) {
         console.log("metamask not found!!!");
         return;
       }
-      const web3 = new Web3(ethereum);
-      const abi = contract.abi;
-      const token = new web3.eth.Contract(abi, contractAddress);
+      if (!account) {
+        console.warn("Account is not connected.");
+        return;
+      }
       await token.methods.addTask(task).send({ from: account });
       console.log("Task added!!!", task);
     } catch (error) {
@@ -101,17 +97,10 @@ function App() {
     }
   };
 
+  // DISPLAY ALL TASK
   const getAllTask = async () => {
     try {
-      if (!account) {
-        console.warn("Account is not connected.");
-        return;
-      }
       if (ethereum) {
-        const { ethereum } = window;
-        const web3 = new Web3(ethereum);
-        const abi = contract.abi;
-        const token = new web3.eth.Contract(abi, contractAddress);
         const allTasks = await token.methods.getAllTask().call();
         console.log(allTasks);
         getTasks(...allTasks,allTasks);
@@ -123,6 +112,28 @@ function App() {
       console.warn(error);
     }
   };
+
+  const deleteTask = async (_id)=>{
+      try {
+        if(!ethereum){
+          console.log("Metamask not found!!!");
+        }
+        if (!account) {
+          console.warn("Account is not connected.");
+          return;
+        }
+
+        await token.methods.deleteTask(_id).send({from:account});
+        console.log(`${_id} Task deleted!!!`);
+
+        // update the task at frontend
+        const updatedTasks = tasks.filter((task) => task.id !== _id);
+        getTasks(updatedTasks);
+
+      } catch (error) {
+        console.warn(error);
+      }
+  }
 
   return (
     <div className="flex flex-col items-center justify-center m-10 gap-2">
@@ -153,13 +164,20 @@ function App() {
             <h1>No tasks available</h1>
           ) : (
             tasks.map((task) => {
-              if (!task.isDeleted) {
-                return <h1 key={task.id}>{task.task}</h1>;
+              if (task.isDeleted === false) {
+                return (
+                  <div key={task.id}>
+                    <h1>{task.task}</h1>
+                    <button onClick={deleteTask(task.id)}>Delete</button>
+                  </div>
+                  
+                );
               }
               return null;
             })
           )}
         </div>
+        
       </div>
     </div>
   );
