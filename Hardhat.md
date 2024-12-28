@@ -4,7 +4,6 @@
 - Hardhat comes built-in with Hardhat Network, a local Ethereum network designed for development.
 - It allows you to deploy your contracts, run your tests and debug your code, all within the confines of your local machine
 
-
 #### INSTALLING HARDHAT AND INITIALLIZING PROJECT
 
 ```js
@@ -15,7 +14,6 @@ npm i --save @openzeppelin/contracts
 npm install --save-dev @nomicfoundation/hardhat-toolbox
 ```
 
-
 #### Compiling contracts
 
 - Start by creating a new directory called **contracts** and create a file inside the directory called **Web3.sol**
@@ -25,24 +23,26 @@ npx hardhat compile
 ```
 
 
+
 #### Testing contracts
 
 **Note : Hardhat will run every *.js file in `test/`**
 
-- Start the testing using following command : 
+- Start the testing using following command :
+
 ```js
 npx hardhat test
 ```
 
-
 - We will use **Ether.js and Mocha-Chai** for our testing.
 - **Mocha-Chai is popular JavaScript assertion library**
+
+
 ```js
 // installing ether.js and mocha
 npm install ethers
 npm install --save-dev mocha
 ```
-
 
 
 - Create a new directory called **test** inside our project root directory and create a new file in there called **web3test.js**
@@ -84,16 +84,16 @@ describe("Token contract", function () {
 - Above, we can use either use **expect(...) or assert.equal(...) method**
 
 
+
 ##### Reusing common test setups with fixtures
 
-- This setup could involve multiple deployments and other transactions. 
-- Doing that in every test means a lot of code duplication. 
+- This setup could involve multiple deployments and other transactions.
+- Doing that in every test means a lot of code duplication.
 - Plus, executing many transactions at the beginning of each test can make the test suite much slower.
-
 
 - To can avoid code duplication and improve the performance of your test suite we can use **fixtures**
 - A fixture is a setup function that is run only the first time it's invoked.
-- On every invocationshardhat will reset the state of networks. 
+- On every invocationshardhat will reset the state of networks.
 
 ```js
 const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
@@ -135,11 +135,11 @@ describe("Token contract", function () {
 **Note : To know more testing methods read hardhat testing docs (you know!!!)**
 
 
+
 #### Debugging with Hardhat Network
 
 - For debugging we will use **console.log()** in soilidity similar to JS.
 - you can print logging messages and contract variables from your Solidity code.
-
 
 ```js
 // contract/Web3.sol
@@ -158,52 +158,20 @@ contract TestContract {
 
 
 
-#### Deploying to a live network
+#### Store your API_KEY
 
-- To run  deploy our smart contract use following code:
+- We will store our API_KEY, private_key and seed-phrase in **var** and not in **`.env || .env.local`**
+
 ```js
-// THIS INITITALIZE AN RPC SERVER
-npx hardhat node
-
-// DEPLOYING ON LOCALHOST
-npx hardhat ignition deploy ./ignition/modules/deploy.cjs --network localhost
-
-// DEPLOYING ON TESTNET
-npx hardhat ignition deploy ./ignition/modules/deploy.cjs --network sepolia
+// RUN THE FOLLOWING COMMAND TO STORE THE KEY IN VAR
+npx hardhat vars set API_KEY_NAME
 ```
 
 
-- In Hardhat, deployments are defined through **Ignition Modules.** 
-- Ignition modules are written inside **./ignition/modules directory.**
-
+**hardhat.config.js**
 ```js
-// ./ignition/modules/deploy.cjs
-const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
-
-const TokenModule = buildModule("TokenModule", (m) => {
-  const token = m.contract("Web3");
-
-  return { token };
-});
-
-module.exports = TokenModule;
-```
-
-
-
-- Now to deploy our smart contract we will initialize an RPC server locally in our terminal(port:8545)
-- We need to modify our **hardhat.config.js** file.
-
-
-```js
-// hardhat.config.js
-
 require("@nomicfoundation/hardhat-toolbox");
 const { vars } = require("hardhat/config");
-
-// // SET YOUR API KEY IN VARS AND NOT IN .ENV
-// npx hardhat vars set API_KEY_NAME
-
 
 const INFURA_API_KEY = vars.get("INFURA_API_KEY");
 const PRIVATE_KEY = vars.get("PRIVATE_KEY");
@@ -226,24 +194,64 @@ module.exports = {
 
 ```
 
-- Here, we are using **Infura blockchain node provider**
 
 
 
-#### Store your API_KEY
+#### Deploying to a live network (COMMANDS)
 
-- We will store our API_KEY, private_key and seed-phrase in **var** and not in **.env/.env.local**
+- To deploy our smart contract use following code:
 
 ```js
-// RUN THE FOLLOWING COMMAND TO STORE THE KEY IN VAR
-npx hardhat vars set API_KEY_NAME
+// THIS INITITALIZE AN RPC SERVER
+npx hardhat node
 
+// DEPLOYING ON LOCALHOST
+npx hardhat ignition deploy ./ignition/modules/deploy.cjs --network localhost
 
-// hardhat.config.cjs
-const { vars } = require("hardhat/config"); 
-const INFURA_API_KEY = vars.get("INFURA_API_KEY");
-const PRIVATE_KEY = vars.get("PRIVATE_KEY");
+// DEPLOYING ON TESTNET
+npx hardhat ignition deploy ./ignition/modules/deploy.cjs --network sepolia
 ```
+
+- In Hardhat, deployments are defined through **Ignition Modules.**
+- Ignition modules are written inside **./ignition/modules directory.**
+
+
+
+
+#### WRITING DEPLOY SCRIPT (Creating Ignition Modules)
+
+- Now to deploy our smart contract we will initialize an RPC server locally in our terminal(port:8545)
+- We need to modify our **hardhat.config.js** file.
+
+
+
+
+
+**./ignition/modules/deploy.cjs**
+```js
+const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
+
+const TokenModule = buildModule("TokenModule", (m) => {
+  const token = m.contract("Web3");
+
+  return { token };
+});
+
+module.exports = TokenModule;
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #### Verify Smart Contract on etherscan
@@ -268,7 +276,7 @@ const infuraAPIKey = import.meta.env.INFURA_API_KEY;
 
 
 
-
+#### CONNECT WALLET BTN FUNCTION (FRONTEND)
 
 
 ```js
@@ -293,6 +301,7 @@ const Home = () => {
 
   const token = new web3.eth.Contract(abi.abi, address.contractAddress);
 
+  // CONNECT WALLET BTN FUNCTION
   const ConnectWallet = async ()=>{
     try {
       const {ethereum} = window;
@@ -323,6 +332,7 @@ const Home = () => {
     }
   } 
 
+  // ADD TASK FUNCTION
   const AddTask = async ()=>{
     try {
       const {ethereum} = window;

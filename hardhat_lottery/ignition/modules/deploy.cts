@@ -1,12 +1,11 @@
 // This setup uses Hardhat Ignition to manage smart contract deployments.
 // Learn more about it at https://hardhat.org/ignition
 
-const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
+import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-const TokenModule = buildModule("TokenModule", (m: { contract: (arg0: string) => any; }) => {
-  const token = m.contract("Lottery");
+export default buildModule("TokenModule", (m) => {
 
-  return { token };
+  const lottery = m.contract("Lottery");
+  return { lottery };
+  
 });
-
-module.exports = TokenModule;

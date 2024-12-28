@@ -5,6 +5,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
 
 
+
 /**
  * @title A sample lottery smart contract
  * @author anurag shingare
@@ -24,8 +25,8 @@ import "hardhat/console.sol";
 
 
 contract RandomNumber {
-    uint public nonce;
-    uint public s_RecentWinnerIndex;
+    uint private nonce;
+    uint private s_RecentWinnerIndex;
 
     function generateRandomNumber(uint _range) public returns (uint) {
         nonce++;
@@ -46,7 +47,7 @@ contract RandomNumber {
 }
 
 
-contract Lottery is RandomNumber{
+contract Lottery is RandomNumber,Ownable{
     // errors
     error Lottery_LotteryIsNotOpen();
     error Lottery_Only5UsersAreAllowed();
@@ -63,16 +64,15 @@ contract Lottery is RandomNumber{
 
     enum LotteryStatus {Open, PickingWinner}
 
-    User[] public users;
+    User[] private users;
 
-    RandomNumber rng = new RandomNumber();
 
     // State variables
-    uint public s_entranceFee;
-    uint public immutable i_interval;
-    uint public i_lastTimeStamp;
-    uint public s_recentwinnerIndex;
-    address public s_RecentWinnerAddress;
+    uint private s_entranceFee;
+    uint private immutable i_interval;
+    uint private i_lastTimeStamp;
+    uint private s_recentwinnerIndex;
+    address private s_RecentWinnerAddress;
     LotteryStatus s_lotteryStatus;
     
     // Events
@@ -86,12 +86,13 @@ contract Lottery is RandomNumber{
         uint _entranceFee,
         uint _interval,
         address initialOwner
-    ) {
+    ) Ownable(initialOwner) {
         s_entranceFee = _entranceFee;
         i_interval = _interval;
         i_lastTimeStamp = block.timestamp;
-        Ownable(initialOwner);
     }
+
+    RandomNumber rng = new RandomNumber();
 
     /** 
         @dev enterLottery function work as:
@@ -100,7 +101,6 @@ contract Lottery is RandomNumber{
             c. check if user has sent enough value to enter lottery
     */
     function enterLottery() external payable {
-        console.log("The lottery status is :", s_lotteryStatus);
         console.log("The array length is :", users.length);
         console.log("The entrance fee :", s_entranceFee);
         if(s_lotteryStatus == LotteryStatus.PickingWinner){
@@ -128,7 +128,7 @@ contract Lottery is RandomNumber{
             d. transfer all ETH(prize pool) to winner address.
     */
 
-    function selectWinner() external {
+    function selectWinner() external payable onlyOwner{
         // check for enough time has passed
         if((block.timestamp - i_lastTimeStamp) < i_interval){
             revert Lottery_NotEnoughTimeHasPassedToSelectWinner();
@@ -168,6 +168,14 @@ contract Lottery is RandomNumber{
     
     function getLatestWinnerAddress() public view returns(address){
         return s_RecentWinnerAddress;
+    }
+
+    function getLatestWinnerIndex() public view returns(uint){
+        return s_recentwinnerIndex;
+    }
+
+    function getLastTimeStamp() public view returns(uint){
+        return i_lastTimeStamp;
     }
 
 }
