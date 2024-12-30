@@ -7,6 +7,6 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [import ('@tailwindcss/typography'), import ('daisyui')],
 }
 

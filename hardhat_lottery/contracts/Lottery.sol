@@ -73,6 +73,7 @@ contract Lottery is RandomNumber,Ownable{
     uint private i_lastTimeStamp;
     uint private s_recentwinnerIndex;
     address private s_RecentWinnerAddress;
+    uint public s_prizePool;
     LotteryStatus s_lotteryStatus;
     
     // Events
@@ -116,6 +117,7 @@ contract Lottery is RandomNumber,Ownable{
             id:users.length,
             userAddress:payable (msg.sender)
         });
+        s_prizePool = s_prizePool+s_entranceFee;
         users.push(newUser);
         emit Lottery_EmitUserEntered(msg.sender);
     }
@@ -148,6 +150,7 @@ contract Lottery is RandomNumber,Ownable{
         s_lotteryStatus = LotteryStatus.Open;
         i_lastTimeStamp = block.timestamp;
         delete users;
+        s_prizePool = 0;
         emit Lottery_Reset();
 
         (bool success,) = s_RecentWinnerAddress.call{value:address(this).balance}("");
@@ -164,6 +167,10 @@ contract Lottery is RandomNumber,Ownable{
 
     function getLotteryStatus() public view returns(LotteryStatus){
         return s_lotteryStatus;
+    }
+
+    function getCurrentLotteryBalance() public view returns(uint256){
+        return s_prizePool;
     }
     
     function getLatestWinnerAddress() public view returns(address){
