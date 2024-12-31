@@ -9,6 +9,8 @@ export default function App() {
   const [correctNet, setCorrectNet] = React.useState(false);
   const [loggedIn, setLoggedIn] = React.useState(false);
   const [prizePool,setprizePool] = React.useState("0 ETH");
+  const [players,setPlayers] = React.useState([]);
+  const owner = "0x5377cc01a598cbf84f6ffa9007bdfb33cb741273";
 
   // create web3 n contract instance
   const {ethereum} = window;
@@ -79,7 +81,8 @@ export default function App() {
           return;
         }
         if(lottery){
-          const prizePool = await lottery.methods.getCurrentLotteryBalance().call();
+          const prizePool:number = await lottery.methods.getCurrentLotteryBalance().call();
+          console.log(prizePool);
           setprizePool(web3.utils.fromWei(prizePool, 'ether') + " ETH");
           console.log(prizePool);
         }
@@ -89,11 +92,54 @@ export default function App() {
     }
   }
 
+  // get all the players
+  const getAllPlayers = async() =>{
+    try{
+      if(!ethereum){
+        alert("No metamask wallet detected!!!");
+        return;
+      }
+      setPlayers(await lottery.methods.getAllUsers().call());
+      console.log(players);
+    } catch(error){ 
+      console.log(error);
+    }
+  }
+
+  /**
+   * Following condition should be checked before picking the winner:
+        a. users length should be strictly greater than 2
+        b. owner should be allowed to pick a winner
+        c. lottery status should be open
+        d. 
+   * @returns the winner
+   */
+
+  const pickTheWinner = async()=>{
+      try {
+          if(!ethereum){
+            alert("No metamask wallet detcted!!!");
+            return;
+          }
+          // check if current user is owner or not!!!
+          if(account == owner && players.length > 2){
+              await lottery.methods.selectWinner().call();
+          } else {
+            alert("Condition not met!!!");
+          }
+
+
+      } catch (error) {
+        console.log(error);
+      }
+  }
+
   // always render the connectWallet function
   React.useEffect(() => {
     ConnectWallet()
     if (correctNet) {
       currentPrizePool();
+      getAllPlayers();
     }
   }, [correctNet,lottery]);
 
@@ -136,12 +182,16 @@ export default function App() {
               >
               Enter Lottery
             </button>
-            <button 
+            {(account == owner) ? (
+              <button 
               className="bg-red-500 p-2 rounded-md text-white"
-              // onClick={}
+              onClick={pickTheWinner}
               >
               Pick a winner
             </button>
+            ):(
+              <div></div>
+            )}
           </div>
           
         </div>
