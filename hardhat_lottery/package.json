@@ -10,9 +10,12 @@
   "description": "",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/web3": "^1.0.20",
     "hardhat": "^2.22.17"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.1.0"
+    "@nomicfoundation/hardhat-ignition": "^0.15.9",
+    "@openzeppelin/contracts": "^5.1.0",
+    "web3": "^4.16.0"
   }
 }

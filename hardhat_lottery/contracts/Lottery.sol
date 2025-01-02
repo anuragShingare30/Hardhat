@@ -64,7 +64,7 @@ contract Lottery is RandomNumber,Ownable{
 
     enum LotteryStatus {Open, PickingWinner}
 
-    User[] private users;
+    User[] public users;
 
 
     // State variables
@@ -84,11 +84,10 @@ contract Lottery is RandomNumber,Ownable{
     
     // Functions 
     constructor(
-        uint _entranceFee,
         uint _interval,
         address initialOwner
     ) Ownable(initialOwner) {
-        s_entranceFee = _entranceFee;
+        s_entranceFee = 0.0001 ether;
         i_interval = _interval;
         i_lastTimeStamp = block.timestamp;
     }
@@ -135,7 +134,7 @@ contract Lottery is RandomNumber,Ownable{
         if((block.timestamp - i_lastTimeStamp) < i_interval){
             revert Lottery_NotEnoughTimeHasPassedToSelectWinner();
         }
-        if(users.length < 5){
+        if(users.length <= 2){
             revert Lottery_NotEnoughUsersPresent();
         }
 
@@ -169,8 +168,8 @@ contract Lottery is RandomNumber,Ownable{
         return s_lotteryStatus;
     }
 
-    function getCurrentLotteryBalance() public view returns(uint256){
-        return s_prizePool;
+    function getCurrentLotteryBalance() public view returns(uint){
+        return address(this).balance;
     }
     
     function getLatestWinnerAddress() public view returns(address){
@@ -183,6 +182,10 @@ contract Lottery is RandomNumber,Ownable{
 
     function getLastTimeStamp() public view returns(uint){
         return i_lastTimeStamp;
+    }
+
+    function getAllUsers() public view returns(User[] memory){
+        return users;
     }
 
 }

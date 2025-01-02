@@ -2,15 +2,17 @@
 // Learn more about it at https://hardhat.org/ignition
 
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import Web3 from "web3";
 
-export default buildModule("TokenModule", (m) => {
+const TokenModule = buildModule("TokenModule", (m:any) => {
+ // constructor params
+ const web3 = new Web3();
+//  const entranceFee = web3.utils.toWei("0.0001", "ether"); // 0.0001 ETH
+ const interval = 30; // 30 seconds
+ const initialOwner = "0x5377CC01A598CBf84F6ffa9007Bdfb33cB741273"; 
 
-  // constructor params
-  const entranceFee = 1_000_000_000n; // 0.01 ETH
-  const interval = 30; // 30 seconds
-  const initialOwner = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; 
-
-  const lottery = m.contract("Lottery",[entranceFee,interval,initialOwner]);
-  return { lottery };
-  
+ const lottery = m.contract("Lottery",[interval,initialOwner]);
+ return { lottery };
 });
+
+module.exports = TokenModule;

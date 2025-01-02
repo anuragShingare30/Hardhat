@@ -3,13 +3,17 @@ import { Web3 } from 'web3';
 import abi from "../../../../artifacts/contracts/Lottery.sol/Lottery.json"
 import { contractAddress } from "../config";
 
+
+
 export default function App() {
   // state varibale
   const [account, setAccount] = React.useState<string|undefined>("");
   const [correctNet, setCorrectNet] = React.useState(false);
   const [loggedIn, setLoggedIn] = React.useState(false);
+
   const [prizePool,setprizePool] = React.useState("0 ETH");
   const [players,setPlayers] = React.useState([]);
+  const [lastWinner,setLastWinner] = React.useState("");
   const owner = "0x5377cc01a598cbf84f6ffa9007bdfb33cb741273";
 
   // create web3 n contract instance
@@ -28,7 +32,7 @@ export default function App() {
 
         // get chain-id
         const chainId = await ethereum.request({method:"eth_chainId"});
-        console.log("ChainId:",chainId);
+        // console.log("ChainId:",chainId);
 
         // check for correct network
         const sepolia_chain_id = "0xaa36a7"; // 11155111
@@ -40,7 +44,7 @@ export default function App() {
 
         // get accounts
         const accounts = await ethereum.request({method:"eth_requestAccounts"});
-        console.log(accounts[0]);
+        // console.log(accounts[0]);
         setAccount(accounts[0]);
         setLoggedIn(true);
 
@@ -64,7 +68,7 @@ export default function App() {
       }
       await lottery.methods.enterLottery().send({
         from:account,
-        value:web3.utils.toWei('0.001','ether'),
+        value: web3.utils.toWei("0.0001", "ether"), // 0.0001 ETH,
         gas:"300000",
         gasPrice:undefined
       })
@@ -73,24 +77,6 @@ export default function App() {
     }
   }
 
-  // get the current prize pool
-  const currentPrizePool = async ()=>{
-    try {
-        if(!ethereum){
-          alert("No metamask wallet detected!!!");
-          return;
-        }
-        if(lottery){
-          const prizePool:number = await lottery.methods.getCurrentLotteryBalance().call();
-          console.log(prizePool);
-          setprizePool(web3.utils.fromWei(prizePool, 'ether') + " ETH");
-          console.log(prizePool);
-        }
-    } catch (error) {
-      console.log(error);
-      
-    }
-  }
 
   // get all the players
   const getAllPlayers = async() =>{
@@ -100,7 +86,13 @@ export default function App() {
         return;
       }
       setPlayers(await lottery.methods.getAllUsers().call());
-      console.log(players);
+      // console.log(players);
+
+      setprizePool(web3.utils.fromWei(await lottery.methods.getCurrentLotteryBalance().call(), 'ether') + " ETH");
+      // console.log(prizePool);
+
+      setLastWinner(await lottery.methods.getLatestWinnerAddress().call());
+      // console.log(lastWinner);
     } catch(error){ 
       console.log(error);
     }
@@ -111,7 +103,6 @@ export default function App() {
         a. users length should be strictly greater than 2
         b. owner should be allowed to pick a winner
         c. lottery status should be open
-        d. 
    * @returns the winner
    */
 
@@ -123,7 +114,11 @@ export default function App() {
           }
           // check if current user is owner or not!!!
           if(account == owner && players.length > 2){
-              await lottery.methods.selectWinner().call();
+              await lottery.methods.selectWinner().send({
+                from:account,
+                gas:"300000",
+                gasPrice:undefined
+              });
           } else {
             alert("Condition not met!!!");
           }
@@ -138,10 +133,15 @@ export default function App() {
   React.useEffect(() => {
     ConnectWallet()
     if (correctNet) {
-      currentPrizePool();
       getAllPlayers();
     }
-  }, [correctNet,lottery]);
+    // Listen for account changes
+    ethereum?.on("accountsChanged", ConnectWallet);
+
+    return () => {
+      ethereum?.removeListener("accountsChanged", ConnectWallet);
+    };
+  }, [lottery]);
 
   return (
     <div className="">
@@ -175,7 +175,11 @@ export default function App() {
           <div className="flex flex-col items-center justify-center p-10 border border-red-800 gap-5">
             <h1 className="text-3xl text-red-500 font-bold">Lottery</h1>
             <h1 className="text-xl font-semibold">Prize Pool : {prizePool}</h1>
-            <h1 className="font-semibold text-xl">Last Winner : 0x00...000</h1>
+            {lastWinner == "" ? (
+              <h1 className="font-semibold text-xl">No last winner!!!</h1>
+            ):(
+              <h1 className="font-semibold text-xl">Last Winner : {lastWinner}</h1>
+            )}
             <button 
               className="bg-red-500 p-2 rounded-md text-white"
               onClick={enterLottery}
@@ -198,6 +202,19 @@ export default function App() {
 
 
         {/* player list */}
+        <div className="flex flex-col items-center p-4 gap-2 mt-8 border border-black">
+            <h1 className="text-3xl font-bold mb-8">Players List</h1>
+            {players.length > 0 ? (
+              players.map((player, index) => (
+                <div key={index} className="flex flex-row items-center p-2 gap-10">
+                  <h1 className="font-semibold text-red-500">{player.userAddress}</h1>
+                  <h1>0.0001 ETH</h1>
+                </div>
+              ))
+            ) : (
+              <h1>No players in the lottery yet.</h1>
+            )}
+          </div>
 
     </div>
   )
