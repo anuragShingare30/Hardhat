@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Web3 } from "web3";
-import { contractAddress } from "./config";
+import contractAddress from "../../../ignition/deployments/chain-31337/deployed_addresses.json"
 import contractAbi from "../../../artifacts/contracts/Venmo.sol/Venmo.json";
 
 import { useForm } from "react-hook-form";
@@ -15,7 +15,7 @@ export default function App() {
   const { ethereum } = window;
   const web3 = new Web3(ethereum);
   const abi = contractAbi.abi;
-  const venmo = new web3.eth.Contract(abi, contractAddress);
+  const venmo = new web3.eth.Contract(abi, contractAddress["TokenModule#Venmo"]);
 
   // creating form instance
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
@@ -67,24 +67,42 @@ export default function App() {
 
   // sending ethers and message to user
   const sendEther = async (data) => {
+    const {toAddress,message,amount} = data;
     try {
       if(!ethereum){
         alert("No wallet detected!!!");
         return;
       }
-      await venmo.methods.sendEthers(1000000, data.toAddress,data.message).send({
+      const reciept = await venmo.methods.sendEthers(web3.utils.toWei(amount,'ether'), (data.toAddress), data.message).send({
+        value:web3.utils.toWei(amount,'ether'),
         from:account,
-        value:web3.utils.toWei("0.0001","ether"),
         gas:"300000",
         gasPrice:undefined
-      });
+      })
+      console.log(reciept); 
+      console.log(toAddress,message,amount);
     } catch (error) {
       console.log(error);
     }
   };
 
+
+  // fetch all senders
+  const fetchSenders = async()=>{
+    try {
+      if(!ethereum){
+        alert("No metamask wallet detected!!!");
+        return;
+      }
+      
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
-    // ConnectWalletBtn();
+    ConnectWalletBtn();
+    fetchSenders();
   }, []);
 
   return (
@@ -118,10 +136,16 @@ export default function App() {
           {errors.toAddress?.type === 'required' && <p role="alert">Reciever address is required</p>}
           <input
             placeholder="enter the message"
-            {...register("message", { required: true, minLength: 6, maxLength: 20 })}
+            {...register("message", { required: true, minLength: 6, maxLength: 43 })}
             className="input input-primary"
           />
           {errors.message?.type === 'required' && <p role="alert">message is required</p>}
+          <input
+            placeholder="enter the amount in ether"
+            {...register("amount", { required: true, minLength:2 })}
+            className="input input-primary"
+          />
+          {errors.amount?.type === 'required' && <p role="alert">amount is required</p>}
           <button 
               type="submit" 
               className="btn btn-sm btn-accent" 
@@ -130,6 +154,11 @@ export default function App() {
             {isSubmitting ? "Loading..." : "Send"}
           </button>
         </form>
+      </div>
+
+      {/* fetch all senders */}
+      <div className="p-4 m-4">
+        <h1>Hello</h1>
       </div>
     </div>
   );
