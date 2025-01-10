@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Web3 } from "web3";
-import contractAddress from "../../../ignition/deployments/chain-31337/deployed_addresses.json"
+// import contractAddress from "../../../ignition/deployments/chain-31337/deployed_addresses.json"
+import contractAddress from "../../../ignition/deployments/chain-11155111/deployed_addresses.json"
 import contractAbi from "../../../artifacts/contracts/Venmo.sol/Venmo.json";
 
 import { useForm } from "react-hook-form";
@@ -10,12 +11,14 @@ export default function App() {
   const [account, setAccount] = useState<string | undefined>("");
   const [correctNet, setCorrectNet] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [senders,setSenders] = useState([]);
 
   // create web3 and contract instance
   const { ethereum } = window;
   const web3 = new Web3(ethereum);
   const abi = contractAbi.abi;
   const venmo = new web3.eth.Contract(abi, contractAddress["TokenModule#Venmo"]);
+
 
   // creating form instance
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
@@ -32,20 +35,20 @@ export default function App() {
       console.log(chainID);
 
       // check for correct network(sepolia)
-      // const sepolia_chain_id = "0xaa36a7"; // 11155111
-      // if(chainID != sepolia_chain_id){
-      //   alert("You are not connected to sepolia!!");
-      //   return;
-      // }
-      // setCorrectNet(true);
-
-      // check for correct network for testing purpose(anvil)
-      const anvil_chain_id = "0x7a69"; // 31337
-      if (chainID != anvil_chain_id) {
-        alert("You are not connected to anvil!!");
+      const sepolia_chain_id = "0xaa36a7"; // 11155111
+      if(chainID != sepolia_chain_id){
+        alert("You are not connected to sepolia!!");
         return;
       }
       setCorrectNet(true);
+
+      // // check for correct network for testing purpose(anvil)
+      // const anvil_chain_id = "0x7a69"; // 31337
+      // if (chainID != anvil_chain_id) {
+      //   alert("You are not connected to anvil!!");
+      //   return;
+      // }
+      // setCorrectNet(true);
 
       // get accounts
       const accounts = await ethereum.request({
@@ -94,7 +97,8 @@ export default function App() {
         alert("No metamask wallet detected!!!");
         return;
       }
-      
+      setSenders(await venmo.methods.getAllSendersInfo().call());
+      console.log(senders);
     } catch (error) {
       console.log(error);
     }
@@ -158,7 +162,23 @@ export default function App() {
 
       {/* fetch all senders */}
       <div className="p-4 m-4">
-        <h1>Hello</h1>
+        <h1 className="text-3xl text-white font-bold">Previous Transactions</h1>
+        <div className="m-5 flex flex-col gap-5">
+          {senders.length > 0 ? (
+            senders.map((sender,index)=>{
+              return (
+                <div key={index} className="border rounded-lg flex flex-col p-2">
+                  <h1 className="text-white font-semibold">{sender.senderAddress}</h1>
+                  <h1 className="text-purple-400">{sender.senderMsg}</h1>
+                </div>
+              );
+            })
+          ):(
+            <div className="m-4 p-4">
+              <h1 className="text-2xl">No previous senders found...</h1>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
