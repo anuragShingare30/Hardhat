@@ -6,12 +6,21 @@ import contractAbi from "../../../artifacts/contracts/Venmo.sol/Venmo.json";
 
 import { useForm } from "react-hook-form";
 
+interface senderType {
+  transactionId:number;
+  senderAddress:string;
+  receiverAddress:string;
+  timeStamp:number;
+  senderMsg:string;
+  amountSend:number;
+}
+
 export default function App() {
   // state varibale
   const [account, setAccount] = useState<string | undefined>("");
   const [correctNet, setCorrectNet] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [senders, setSenders] = useState([]);
+  const [senders, setSenders] = useState<senderType[]>([]);
 
   // create web3 and contract instance
   const { ethereum } = window;
@@ -101,7 +110,7 @@ export default function App() {
       }
       setSenders(await venmo.methods.getAllSendersInfo().call());
       // console.log(senders);
-      // console.log(senders[0].timeStamp);
+      // console.log(senders[0].receiverAddress);
     } catch (error) {
       console.log(error);
     }
