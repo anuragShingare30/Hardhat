@@ -11,7 +11,7 @@ export default function App() {
   const [account, setAccount] = useState<string | undefined>("");
   const [correctNet, setCorrectNet] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [senders,setSenders] = useState([]);
+  const [senders, setSenders] = useState([]);
 
   // create web3 and contract instance
   const { ethereum } = window;
@@ -36,7 +36,7 @@ export default function App() {
 
       // check for correct network(sepolia)
       const sepolia_chain_id = "0xaa36a7"; // 11155111
-      if(chainID != sepolia_chain_id){
+      if (chainID != sepolia_chain_id) {
         alert("You are not connected to sepolia!!");
         return;
       }
@@ -49,6 +49,8 @@ export default function App() {
       //   return;
       // }
       // setCorrectNet(true);
+
+
 
       // get accounts
       const accounts = await ethereum.request({
@@ -70,20 +72,20 @@ export default function App() {
 
   // sending ethers and message to user
   const sendEther = async (data) => {
-    const {toAddress,message,amount} = data;
+    const {amount } = data;
     try {
-      if(!ethereum){
+      if (!ethereum) {
         alert("No wallet detected!!!");
         return;
       }
-      const reciept = await venmo.methods.sendEthers(web3.utils.toWei(amount,'ether'), (data.toAddress), data.message).send({
-        value:web3.utils.toWei(amount,'ether'),
-        from:account,
-        gas:"300000",
-        gasPrice:undefined
+      const reciept = await venmo.methods.sendEthers(web3.utils.toWei(amount, 'ether'), (data.toAddress), data.message).send({
+        value: web3.utils.toWei(amount, 'ether'),
+        from: account,
+        gas: "300000",
+        gasPrice: undefined
       })
-      console.log(reciept); 
-      console.log(toAddress,message,amount);
+      // console.log(reciept);
+      // console.log(toAddress, message, amount);
     } catch (error) {
       console.log(error);
     }
@@ -91,14 +93,15 @@ export default function App() {
 
 
   // fetch all senders
-  const fetchSenders = async()=>{
+  const fetchSenders = async () => {
     try {
-      if(!ethereum){
+      if (!ethereum) {
         alert("No metamask wallet detected!!!");
         return;
       }
       setSenders(await venmo.methods.getAllSendersInfo().call());
-      console.log(senders);
+      // console.log(senders);
+      // console.log(senders[0].timeStamp);
     } catch (error) {
       console.log(error);
     }
@@ -106,8 +109,10 @@ export default function App() {
 
   useEffect(() => {
     ConnectWalletBtn();
-    fetchSenders();
-  }, []);
+    if(correctNet){
+      fetchSenders();
+    }
+  }, [correctNet,loggedIn]);
 
   return (
     <div>
@@ -128,58 +133,72 @@ export default function App() {
           </button>
         )}
       </div>
-      {/* form */}
-      <div className="p-4 m-4">
-        <form onSubmit={handleSubmit(sendEther)}>
 
-          <input
-            placeholder="enter to address"
-            {...register("toAddress", { required: true, minLength: 42, maxLength: 42 })}
-            className="input input-primary"
-          />
-          {errors.toAddress?.type === 'required' && <p role="alert">Reciever address is required</p>}
-          <input
-            placeholder="enter the message"
-            {...register("message", { required: true, minLength: 6, maxLength: 43 })}
-            className="input input-primary"
-          />
-          {errors.message?.type === 'required' && <p role="alert">message is required</p>}
-          <input
-            placeholder="enter the amount in ether"
-            {...register("amount", { required: true, minLength:2 })}
-            className="input input-primary"
-          />
-          {errors.amount?.type === 'required' && <p role="alert">amount is required</p>}
-          <button 
-              type="submit" 
-              className="btn btn-sm btn-accent" 
-              disabled={isSubmitting}
-              >
-            {isSubmitting ? "Loading..." : "Send"}
-          </button>
-        </form>
-      </div>
+      {/* compact form and senders info */}
+      <div className="flex lg:flex-row sm:flex-col md:flex-col items-start justify-center">
 
-      {/* fetch all senders */}
-      <div className="p-4 m-4">
-        <h1 className="text-3xl text-white font-bold">Previous Transactions</h1>
-        <div className="m-5 flex flex-col gap-5">
-          {senders.length > 0 ? (
-            senders.map((sender,index)=>{
-              return (
-                <div key={index} className="border rounded-lg flex flex-col p-2">
-                  <h1 className="text-white font-semibold">{sender.senderAddress}</h1>
-                  <h1 className="text-purple-400">{sender.senderMsg}</h1>
-                </div>
-              );
-            })
-          ):(
-            <div className="m-4 p-4">
-              <h1 className="text-2xl">No previous senders found...</h1>
-            </div>
-          )}
+        {/* fetch all senders */}
+        <div className="p-4 m-4 lg:w-full">
+          <h1 className="text-3xl text-white font-bold">Previous Transactions</h1>
+          <div className="m-5 flex flex-col gap-5">
+            {senders.length > 0 ? (
+              senders
+                .slice(-5) // Get the last 5 elements from the array
+                .map((sender, index) => {
+                  const timeStamp = Number(sender.timeStamp);
+                  const date = new Date(timeStamp*1000);
+                  const formatDate = date.toLocaleString();
+                  return (
+                    <div key={index} className="border rounded-lg flex flex-col p-2">
+                      <h1 className="text-white font-semibold">{sender.senderAddress}</h1>
+                      <h1 className="text-gray-500 text-sm">{formatDate}</h1>
+                      <h1 className="text-purple-400">{sender.senderMsg}</h1>
+                    </div>
+                  );
+                })
+            ) : (
+              <div className="m-4 p-4">
+                <h1 className="text-2xl">No previous senders found...</h1>
+              </div>
+            )}
+
+          </div>
         </div>
+
+        {/* form */}
+        <div className="p-4 m-4 lg:w-full">
+          <form onSubmit={handleSubmit(sendEther)} className="flex flex-col gap-5">
+
+            <input
+              placeholder="reciever address"
+              {...register("toAddress", { required: true, minLength: 42, maxLength: 42 })}
+              className="input input-primary"
+            />
+            {errors.toAddress?.type === 'required' && <p role="alert">Reciever address is required</p>}
+            <input
+              placeholder="message to reciever"
+              {...register("message", { required: true, minLength: 6, maxLength: 43 })}
+              className="input input-primary"
+            />
+            {errors.message?.type === 'required' && <p role="alert">message is required</p>}
+            <input
+              placeholder="amount in ether"
+              {...register("amount", { required: true, minLength: 2 })}
+              className="input input-primary"
+            />
+            {errors.amount?.type === 'required' && <p role="alert">amount is required</p>}
+            <button
+              type="submit"
+              className="btn btn-md btn-accent"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Loading..." : "Send"}
+            </button>
+          </form>
+        </div>
+
       </div>
+
     </div>
   );
 }
