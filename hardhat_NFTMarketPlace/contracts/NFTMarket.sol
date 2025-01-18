@@ -16,6 +16,7 @@ contract NFTMarket is ReentrancyGuard,Ownable{
     error NFTMarket_NotEnoughMoneySentToBuyNFT();
     error NFTMarket_NotEnoughAmountAvailableToWithdraw();
     error NFTMarket_WithDrawTNXFailed();
+    error NFTMarket_NotListedForSale();
 
     // type declaration
     struct Listing{
@@ -53,6 +54,8 @@ contract NFTMarket is ReentrancyGuard,Ownable{
     constructor()
         Ownable(msg.sender){}
 
+    
+
     function listNFT(
         address nftAddress,
         uint256 tokenId,
@@ -62,7 +65,7 @@ contract NFTMarket is ReentrancyGuard,Ownable{
             revert NFTMarket_nftPriceShouldBeGreaterThanZero();
         }
         IERC721 nft = IERC721(nftAddress);
-        if(nft.getApproved(tokenId) != address(this)){
+        if (!nft.isApprovedForAll(msg.sender, address(this)) && nft.getApproved(tokenId) != address(this)) {
             revert NFTMarket_ApprovalNotGivenForThisContract();
         }
         s_nftListing[nftAddress][tokenId] = Listing(nftPrice,msg.sender);
@@ -77,11 +80,14 @@ contract NFTMarket is ReentrancyGuard,Ownable{
         if(msg.value < nftPrice){
             revert NFTMarket_NotEnoughMoneySentToBuyNFT();
         }
+        if (s_nftListing[nftAddress][tokenId].nftPrice == 0) {
+            revert NFTMarket_NotListedForSale();
+        }
         IERC721 nft = IERC721(nftAddress);
         address nftOwner = s_nftListing[nftAddress][tokenId].nftOwner;
         s_NftOwnerEarnings[nftOwner] += msg.value;
         nft.safeTransferFrom(nftOwner, msg.sender, tokenId, "");
-        // delete (s_nftListing[nftAddress][tokenId]);
+        delete (s_nftListing[nftAddress][tokenId]);
         s_nftListing[nftAddress][tokenId].nftOwner = msg.sender;
         emit NFTMarket_BuyedNFT(nftOwner,msg.sender,tokenId,nftPrice);
     }
@@ -90,14 +96,21 @@ contract NFTMarket is ReentrancyGuard,Ownable{
         uint256 tokenId
     ) public payable  nonReentrant {
         uint256 amountToWithdraw = s_NftOwnerEarnings[msg.sender];
+        s_NftOwnerEarnings[msg.sender] = 0;
         if(amountToWithdraw <= 0){
             revert NFTMarket_NotEnoughAmountAvailableToWithdraw();
         }
-        s_NftOwnerEarnings[msg.sender] = 0;
         (bool success,) = (msg.sender).call{value:amountToWithdraw}("");
         if(!success){
             revert NFTMarket_WithDrawTNXFailed();
         }
         emit NFTMarket_WithdrawOwnerEarnings(msg.sender,tokenId,amountToWithdraw);
+    }
+
+
+    // getter functions
+    function getOwnerOfTokenId(address nftAddress, uint256 tokenId) public view returns (address){
+        IERC721 nft = IERC721(nftAddress);
+        return nft.ownerOf(tokenId);
     }
 }
