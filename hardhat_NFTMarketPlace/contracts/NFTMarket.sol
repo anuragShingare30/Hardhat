@@ -24,7 +24,7 @@ contract NFTMarket is ReentrancyGuard,Ownable{
         address nftOwner;
     }
 
-    // statevariables
+    // state variables
     mapping (address nftAddress => mapping (uint256 tokenId => Listing)) public s_nftListing;
     mapping (address nftOwner => uint256 ownerEarnings) public s_NftOwnerEarnings;
 
@@ -112,5 +112,12 @@ contract NFTMarket is ReentrancyGuard,Ownable{
     function getOwnerOfTokenId(address nftAddress, uint256 tokenId) public view returns (address){
         IERC721 nft = IERC721(nftAddress);
         return nft.ownerOf(tokenId);
+    }
+    function getUserInfo(address nftAddress,uint256 tokenId) public view returns(Listing memory){
+        return s_nftListing[nftAddress][tokenId];
+    }
+
+    function getOwnerEarnings() public view returns (uint256){
+        return s_NftOwnerEarnings[msg.sender];
     }
 }
