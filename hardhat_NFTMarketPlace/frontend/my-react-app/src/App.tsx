@@ -62,6 +62,19 @@ export default function App(){
     }
   }
 
+  // Minting function
+  const mintNft = async() =>{
+    try {
+      if(!ethereum){
+        return <h1>Metamask wallet not found!!!</h1>;
+      }
+      
+
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(()=>{
     connectWalletBtn();
   },[correctNet,loggedIn]);
@@ -70,22 +83,37 @@ export default function App(){
   return (
     <div>
       {/* Connect Wallet Btn */}
-      <div>
-      {loggedIn ? (
-              <div>
-                <h1 className="text-black btn btn-sm btn-accent">{account}</h1>
-              </div>
-            ) : (
-              <button
-                className="text-black btn btn-sm btn-accent"
-                onClick={connectWalletBtn}
-              >
-                Connect Wallet
-              </button>
-            )}
+      <div className="flex flex-row items-center justify-evenly gap-10">
+        <h1 className="text-2xl text-blue-500 font-semibold">NFT Marketplace</h1>
+        <div>
+          {loggedIn ? (
+                <div>
+                  <h1 className="text-black btn btn-sm btn-accent">{account}</h1>
+                </div>
+              ) : (
+                <button
+                  className="text-black btn btn-sm btn-accent"
+                  onClick={connectWalletBtn}
+                >
+                  Connect Wallet
+                </button>
+              )}
+        </div>
       </div>
 
-      {/* rest of functions */}
+      {/* Mint Nft */}
+      <div className="p-5 m-5">
+        <h1 className="text-xl text-white">Mint the nft</h1>
+        <div>
+
+        </div>
+      </div>
+
+      {/* List nft */}
+
+      {/* buy nft */}
+
+      {/* withdraw earnings */}
 
     </div>
   );

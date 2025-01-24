@@ -29,8 +29,8 @@ describe("Token contract", function () {
     const mintNft = await basicNft.connect(owner).mintNFT("anurag");
     await mintNft.wait(1);
 
-    const setApproval = await basicNft.connect(owner).setApprovalForAll(nftMarketContractAddress,true);
-    await setApproval.wait(1);
+    const setApprovalForAll = await basicNft.connect(owner).setApprovalForAll(nftMarketContractAddress,true);
+    await setApprovalForAll.wait(1);
 
     const checkApprovalMethod = await basicNft.connect(owner).isApprovedForAll(owner,nftMarketContractAddress);
     assert(checkApprovalMethod == true);
