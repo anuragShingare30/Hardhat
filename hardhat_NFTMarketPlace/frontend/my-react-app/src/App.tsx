@@ -27,21 +27,21 @@ export default function App(){
       const chainID = await ethereum.request({ method: "eth_chainId" });
       console.log(chainID);
 
-      // check for correct network(sepolia)
-      const sepolia_chain_id = "0xaa36a7"; // 11155111
-      if (chainID != sepolia_chain_id) {
-        alert("You are not connected to sepolia!!");
-        return;
-      }
-      setCorrectNet(true);
-
-      // // check for correct network for testing purpose(anvil)
-      // const anvil_chain_id = "0x7a69"; // 31337
-      // if (chainID != anvil_chain_id) {
-      //   alert("You are not connected to anvil!!");
+      // // check for correct network(sepolia)
+      // const sepolia_chain_id = "0xaa36a7"; // 11155111
+      // if (chainID != sepolia_chain_id) {
+      //   alert("You are not connected to sepolia!!");
       //   return;
       // }
       // setCorrectNet(true);
+
+      // check for correct network for testing purpose(anvil)
+      const anvil_chain_id = "0x7a69"; // 31337
+      if (chainID != anvil_chain_id) {
+        alert("You are not connected to anvil!!");
+        return;
+      }
+      setCorrectNet(true);
 
 
       // get accounts
@@ -63,17 +63,17 @@ export default function App(){
   }
 
   // Minting function
-  const mintNft = async() =>{
-    try {
-      if(!ethereum){
-        return <h1>Metamask wallet not found!!!</h1>;
-      }
+  // const mintNft = async() =>{
+  //   try {
+  //     if(!ethereum){
+  //       return <h1>Metamask wallet not found!!!</h1>;
+  //     }
       
 
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   useEffect(()=>{
     connectWalletBtn();
@@ -105,7 +105,7 @@ export default function App(){
       <div className="p-5 m-5">
         <h1 className="text-xl text-white">Mint the nft</h1>
         <div>
-
+            
         </div>
       </div>
 
