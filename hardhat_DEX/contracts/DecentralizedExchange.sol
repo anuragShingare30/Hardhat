@@ -4,6 +4,29 @@ pragma solidity ^0.8.26;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+
+/**
+ @title Sample smart contract for Decentralized Exchange Protocol
+ @author Anurag Shingare
+ @notice The contract is a sample smart contract for Decentralized exchange DeFi protocol
+ @dev The contract and DEX working flow will be
+    1. Mint ERC20 tokens
+        a. Mint three tokens with some premint value
+        b. This three tokens only will be used as swapping tokens with ETH
+    2. Set Exchange Rates(optinal)
+        a. We can set some exchange rates for swapping tokens with ETH
+    3. Swapping ETH for Tokens
+        a. A user sends x ETH to the contract.
+        b. Contract stores this ETH and updates the user's balance
+        c. Contract transfers tokens to user
+        d. User needs to approve the contract to sent the tokens/ETH
+    4. Swapping Tokens for ETH
+        a. The user approves the contract to spend x tokens
+        b. Transfer the calculated ETH amount from the contract to the user 
+        c. User get the calculated amount of ETH for tokens from contract!!!
+ */
+
+
 contract BaseToken is ERC20 {
     constructor(string memory tokenName, string memory tokenSymbol)
         ERC20(tokenName, tokenSymbol)
