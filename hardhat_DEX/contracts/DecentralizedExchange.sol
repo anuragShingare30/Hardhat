@@ -57,7 +57,7 @@ contract DecentralizedExchange {
     BaseToken baseToken;
 
     // state variables
-    string[] private tokens = ["DAI", "RAI", "KREX"];
+    string[] private tokens = ["DAI", "RAI", "FREX"];
     mapping(string => ERC20) private s_token;
 
     // events
