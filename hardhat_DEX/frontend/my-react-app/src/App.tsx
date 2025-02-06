@@ -33,7 +33,7 @@ export default function App() {
 
 
 
-  // connect wallet button
+  // CONNECT WALLET BUTTON
   const ConnectWalletBtn = async () => {
     try {
       if (!ethereum) {
@@ -80,6 +80,7 @@ export default function App() {
     }
   }
 
+  // FETCH ALL TOKENS BALANCE
   const fetchTokenBalance = async () => {
     try {
       if (!ethereum) {
@@ -94,31 +95,37 @@ export default function App() {
       );
       
       setTokens(balances);
-      console.log(balances);
+      // console.log(balances);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
-  const onSubmit = async(data) => {
-    console.log(typeof(Number(data.SellAmount)));
-    const {SellAmount,Sell,BuyAmount,Buy} = data;
-    
-    // if sell is ETH and buy is token -> swapETHToToken(tokenName,amount)
-    if(Sell === "ETH" && Buy !== "ETH"){
-        await protocol.methods.swapETHToToken(Sell,web3.utils.toWei(SellAmount,'ether')).send({
-          value:web3.utils.toWei(SellAmount,'ether'),
-          gasPrice:undefined,
+  // SWAP ETH WITH TOKENS
+  const swapETHToTokens = async(tokenName:string,amount:number)=>{
+    try {
+        await protocol.methods.swapETHToToken(tokenName,web3.utils.toWei(amount,'ether')).send({
+          value:web3.utils.toWei(amount,'ether'),
           gas:"100000",
-          from:account
-        })
+          gasPrice:undefined
+        });
+    } catch (error) {
+        console.log(error);
     }
-    
+  }
 
-    // if sell is token1 and buy is token2 -> swapTokenToToken
+  // SWAP TOKENS WITH ETH
+  const swapTokenToETH = async(tokenName:string,amount:number)=>{
+    try {
+        // 
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-    // if sell is token and buy is ETH -> swapTokenToETH
 
+  const onSubmit = async(data:dataType) => {
+    console.log(data);
   }
 
   
