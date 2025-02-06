@@ -4,12 +4,12 @@ import contractAddresses from "../../../ignition/deployments/chain-31337/deploye
 import contractAbi from "../../../artifacts/contracts//DecentralizedExchange.sol/DecentralizedExchange.json";
 import { useForm } from "react-hook-form";
 
-// interface dataType{
-//   SellAmount:number;
-//   Sell:string;
-//   BuyAmount:number;
-//   Buy:string;
-// }
+interface dataType{
+  SellAmount:number;
+  Sell:string;
+  BuyAmount:number;
+  Buy:string;
+}
 
 
 export default function App() {
@@ -18,7 +18,7 @@ export default function App() {
   const [correctNet, setCorrectNet] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const tokenNames = ["DAI", "RAI", "FREX"];
-  const [tokens, setTokens] = useState<string[] | null>([]);
+  const [tokens, setTokens] = useState([]);
   // form handling
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
@@ -92,8 +92,9 @@ export default function App() {
           return await protocol.methods.getBalance(token).call();
         })
       );
-
+      
       setTokens(balances);
+      console.log(balances);
     } catch (error) {
       console.log(error);
     }
@@ -104,11 +105,15 @@ export default function App() {
     const {SellAmount,Sell,BuyAmount,Buy} = data;
     
     // if sell is ETH and buy is token -> swapETHToToken(tokenName,amount)
-    await protocol.methods.swapETHToToken(Buy,Number(SellAmount)).send({
-      value: web3.utils.toWei(Number(SellAmount),'ether'),
-      gas: "300000",
-      gasPrice:undefined
-    });
+    if(Sell === "ETH" && Buy !== "ETH"){
+        await protocol.methods.swapETHToToken(Sell,web3.utils.toWei(SellAmount,'ether')).send({
+          value:web3.utils.toWei(SellAmount,'ether'),
+          gasPrice:undefined,
+          gas:"100000",
+          from:account
+        })
+    }
+    
 
     // if sell is token1 and buy is token2 -> swapTokenToToken
 
@@ -116,13 +121,15 @@ export default function App() {
 
   }
 
+  
+
   useEffect(() => {
     ConnectWalletBtn();
     if (correctNet) {
       // function that should always display if correct network
       fetchTokenBalance();
     }
-  }, [loggedIn, account, correctNet,/*tokens*/]);
+  }, [loggedIn, account, correctNet,tokens]);
   return (
     <div>
       {/* connect wallet btn */}
@@ -157,7 +164,6 @@ export default function App() {
       {/* Swapping mechanism/function */}
       <div className="p-4 m-10 flex flex-col items-center ">
         <h1 className="text-4xl font-extrabold">Swapping mechanism</h1>
-        {/* first block */}
         <div className="m-10">
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
 
